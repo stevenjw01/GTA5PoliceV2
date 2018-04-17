@@ -1,4 +1,4 @@
-﻿using Discord.Commands;
+using Discord.Commands;
 using System.Threading.Tasks;
 using GTA5PoliceV2.Config;
 using GTA5PoliceV2.Util;
@@ -317,6 +317,45 @@ namespace GTA5PoliceV2.Modules
             await Program.Logger(new LogMessage(LogSeverity.Info, "GTA5Police Commands", "Developer command was used by " + user + "."));
 
             Statistics.AddOutgoingMessages();
+        }
+
+
+        //Looking to add a command in which those you don't alread have FiveM, know where to get everything
+        [Command("fivem")]
+        [Alias("download", "game")]
+        public async Task FivemAsync()
+        {
+            var channel = Context.Channel;
+            var user = Context.User;
+            await Context.Message.DeleteAsync();
+
+            TimeSpan last = Cooldowns.GetClearcacheLast();
+            TimeSpan current = DateTime.Now.TimeOfDay;
+            double difference = current.TotalSeconds - last.TotalSeconds;
+
+
+            //Blurr's Cooldown
+            if (difference >= Cooldowns.GetCommandCooldown() || difference < 0)
+            {
+                var embed = new EmbedBuilder() { Color = Colours.generalCol };
+                embed.WithAuthor("How to download and install FiveM");
+                embed.WithUrl(References.GetClearcacheURL());
+                embed.AddField(new EmbedFieldBuilder() { Name = "Download", Value = "https://fivem.net/" });
+                embed.AddField(new EmbedFieldBuilder() { Name = "How?", Value = "Head to that download link, click **Download client** and unzip the package to a folder on your **desktop**. Run the **FiveM.exe** and that's it." });
+                embed.Description = "If you encounter any problems, make sure to try clearing your cache. To learn more, type **!clearcache**";
+                embed.WithThumbnailUrl(References.GetGta5policeLogo());
+                embed.WithFooter("Requested by " + Context.User);
+                embed.WithCurrentTimestamp();
+
+                var message = await Context.Channel.SendMessageAsync("", false, embed);
+                //await Delete.DelayDeleteEmbedAsync(message, (int)Cooldowns.GetCommandCooldown());
+
+                await Program.Logger(new LogMessage(LogSeverity.Info, "GTA5Police Commands", "Fivem command was used by " + user + ".")); //This is all your crap that is kul
+                Cooldowns.SetClearcacheLast(current);
+                Statistics.AddOutgoingMessages();
+            }
+            else await errors.sendErrorTempAsync(channel, user + errorMessage + "\nCooldown " + difference + "/" + Cooldowns.GetCommandCooldown() + " seconds", Colours.errorCol);
+            //END of Blurr's Cooldown
         }
     }
 }
